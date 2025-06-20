@@ -5,9 +5,10 @@ import type {
   SpeechRecognitionErrorEvent,
 } from "../types/speech";
 
-export function useSpeechRecognition() {
+export function useSpeechRecognition(
+  onTranscriptionUpdate: (transcription: string) => void
+) {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcription, setTranscription] = useState("");
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function useSpeechRecognition() {
           for (let i = 0; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
           }
-          setTranscription(transcript);
+          onTranscriptionUpdate(transcript);
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -39,7 +40,7 @@ export function useSpeechRecognition() {
         console.error("Speech recognition not supported in this browser");
       }
     }
-  }, []);
+  }, [onTranscriptionUpdate]);
 
   const toggleRecording = () => {
     if (recognitionRef.current) {
@@ -47,7 +48,7 @@ export function useSpeechRecognition() {
         recognitionRef.current.stop();
       } else {
         recognitionRef.current.start();
-        setTranscription(""); // Clear previous transcription when starting new recording
+        onTranscriptionUpdate(""); // Clear transcription when starting new recording
       }
       setIsRecording(!isRecording);
     } else {
@@ -57,7 +58,6 @@ export function useSpeechRecognition() {
 
   return {
     isRecording,
-    transcription,
     toggleRecording,
   };
 }

@@ -11,6 +11,10 @@ const _schema = i.schema({
     $users: i.entity({
       email: i.string().unique().indexed().optional(),
     }),
+    notes: i.entity({
+      content: i.string(),
+      timestamp: i.date().indexed(),
+    }),
   },
   links: {},
   rooms: {},

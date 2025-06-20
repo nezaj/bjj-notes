@@ -5,18 +5,16 @@ import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 
 interface VoiceRecordingProps {
   onTranscriptionChange: (transcription: string) => void;
+  transcription: string;
 }
 
 export default function VoiceRecording({
   onTranscriptionChange,
+  transcription,
 }: VoiceRecordingProps) {
-  const { isRecording, transcription, toggleRecording } =
-    useSpeechRecognition();
-
-  // Notify parent component when transcription changes
-  React.useEffect(() => {
-    onTranscriptionChange(transcription);
-  }, [transcription, onTranscriptionChange]);
+  const { isRecording, toggleRecording } = useSpeechRecognition(
+    onTranscriptionChange
+  );
 
   return (
     <div>
