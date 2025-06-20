@@ -16,6 +16,12 @@ export default function VoiceRecording({
     onTranscriptionChange
   );
 
+  const handleTranscriptionEdit = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    onTranscriptionChange(event.target.value);
+  };
+
   return (
     <div>
       <button
@@ -32,9 +38,16 @@ export default function VoiceRecording({
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-2">Current Transcription:</h2>
-        <div className="w-full min-h-[200px] p-4 border border-gray-300 rounded-lg bg-gray-50">
-          {transcription || "Your speech will appear here..."}
-        </div>
+        <textarea
+          value={transcription}
+          onChange={handleTranscriptionEdit}
+          placeholder="Your speech will appear here... You can also type or edit manually."
+          className="w-full min-h-[200px] p-4 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+        />
+        <p className="text-sm text-gray-500 mt-2">
+          💡 You can manually edit the text above while recording or after
+          stopping
+        </p>
       </div>
     </div>
   );

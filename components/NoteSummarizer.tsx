@@ -8,9 +8,9 @@ interface NoteSummarizerProps {
 }
 
 export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
-  const [promptInstructions, setPromptInstructions] = useState("");
   const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleSummarize = async () => {
     if (notes.length === 0) {
@@ -20,24 +20,15 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
 
     setIsLoading(true);
     try {
-      // Combine all notes content
-      const notesContent = notes
-        .map((note, index) => `Note ${index + 1}: ${note.content}`)
-        .join("\n\n");
-
-      // Create the prompt
-      const basePrompt = `Please summarize the following notes:\n\n${notesContent}`;
-      const finalPrompt = promptInstructions.trim()
-        ? `${basePrompt}\n\nAdditional instructions: ${promptInstructions}`
-        : basePrompt;
-
-      // Call the API route
+      // Send only notes content
       const response = await fetch("/api/summarize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: finalPrompt }),
+        body: JSON.stringify({
+          notes: notes.map((note) => note.content),
+        }),
       });
 
       if (!response.ok) {
@@ -54,27 +45,23 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
     }
   };
 
+  const handleCopySummary = async () => {
+    if (!summary) return;
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      setIsCopied(true);
+      // Reset the copied state after 2 seconds
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+      alert("Failed to copy to clipboard. Please select and copy manually.");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold">AI Summary</h2>
-
-      {/* Prompt Instructions Input */}
-      <div>
-        <label
-          htmlFor="promptInstructions"
-          className="block text-sm font-medium mb-2"
-        >
-          Additional Instructions (optional)
-        </label>
-        <input
-          id="promptInstructions"
-          type="text"
-          value={promptInstructions}
-          onChange={(e) => setPromptInstructions(e.target.value)}
-          placeholder="e.g., be concise, be funny, focus on key points..."
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
 
       {/* Summarize Button */}
       <button
@@ -89,7 +76,19 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
       {/* Summary Display */}
       {summary && (
         <div>
-          <h3 className="text-lg font-medium mb-2">Summary:</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium">Summary:</h3>
+            <button
+              onClick={handleCopySummary}
+              className={`px-3 py-1 text-sm rounded-md transition-all ${
+                isCopied
+                  ? "bg-green-100 text-green-800 border border-green-300"
+                  : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
+              }`}
+            >
+              {isCopied ? "✓ Copied!" : "📋 Copy"}
+            </button>
+          </div>
           <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="whitespace-pre-wrap">{summary}</p>
           </div>
