@@ -1,175 +1,135 @@
 "use client";
 
-import { id, i, init, InstaQLEntity } from "@instantdb/react";
+import { init } from "@instantdb/react";
+import schema from "../instant.schema";
+import { useState, useEffect, useRef } from "react";
 
-// ID for app: instldraw-test
-const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID!
-
-// Optional: Declare your schema!
-const schema = i.schema({
-  entities: {
-    todos: i.entity({
-      text: i.string(),
-      done: i.boolean(),
-      createdAt: i.number(),
-    }),
-  },
-});
-
-type Todo = InstaQLEntity<typeof schema, "todos">;
-
+const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID!;
 const db = init({ appId: APP_ID, schema });
 
+
+// Define the SpeechRecognition types
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
+// Add global declarations
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
 function App() {
-  // Read Data
-  const { isLoading, error, data } = db.useQuery({ todos: {} });
-  if (isLoading) {
-    return;
-  }
-  if (error) {
-    return <div className="text-red-500 p-4">Error: {error.message}</div>;
-  }
-  const { todos } = data;
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcription, setTranscription] = useState("");
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  useEffect(() => {
+    // Initialize speech recognition
+    if (typeof window !== 'undefined') {
+      const SpeechRecognitionConstructor =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognitionConstructor) {
+        const recognition = new SpeechRecognitionConstructor();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          let transcript = "";
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          setTranscription(transcript);
+        };
+
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error("Speech recognition error", event.error);
+          setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+      } else {
+        console.error("Speech recognition not supported in this browser");
+      }
+    }
+  }, []);
+
+  const toggleRecording = () => {
+    if (recognitionRef.current) {
+      if (isRecording) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+        setTranscription(""); // Clear previous transcription when starting new recording
+      }
+      setIsRecording(!isRecording);
+    } else {
+      alert("Speech recognition is not supported in your browser");
+    }
+  };
+
   return (
-    <div className="font-mono min-h-screen flex justify-center items-center flex-col space-y-4">
-      <h2 className="tracking-wide text-5xl text-gray-300">todos</h2>
-      <div className="border border-gray-300 max-w-xs w-full">
-        <TodoForm todos={todos} />
-        <TodoList todos={todos} />
-        <ActionBar todos={todos} />
-      </div>
-      <div className="text-xs text-center">
-        Open another tab to see todos update in realtime!
-      </div>
-    </div>
-  );
-}
+    <div className="flex flex-col items-center justify-start min-h-screen p-8">
+      <h1 className="text-3xl font-bold mb-8">Voice Recorder</h1>
 
-// Write Data
-// ---------
-function addTodo(text: string) {
-  db.transact(
-    db.tx.todos[id()].update({
-      text,
-      done: false,
-      createdAt: Date.now(),
-    })
-  );
-}
-
-function deleteTodo(todo: Todo) {
-  db.transact(db.tx.todos[todo.id].delete());
-}
-
-function toggleDone(todo: Todo) {
-  db.transact(db.tx.todos[todo.id].update({ done: !todo.done }));
-}
-
-function deleteCompleted(todos: Todo[]) {
-  const completed = todos.filter((todo) => todo.done);
-  const txs = completed.map((todo) => db.tx.todos[todo.id].delete());
-  db.transact(txs);
-}
-
-function toggleAll(todos: Todo[]) {
-  const newVal = !todos.every((todo) => todo.done);
-  db.transact(
-    todos.map((todo) => db.tx.todos[todo.id].update({ done: newVal }))
-  );
-}
-
-
-// Components
-// ----------
-function ChevronDownIcon() {
-  return (
-    <svg viewBox="0 0 20 20">
-      <path
-        d="M5 8 L10 13 L15 8"
-        stroke="currentColor"
-        fill="none"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function TodoForm({ todos }: { todos: Todo[] }) {
-  return (
-    <div className="flex items-center h-10 border-b border-gray-300">
       <button
-        className="h-full px-2 border-r border-gray-300 flex items-center justify-center"
-        onClick={() => toggleAll(todos)}
+        onClick={toggleRecording}
+        className={`px-6 py-3 rounded-full text-white font-medium text-lg transition-all
+          ${isRecording
+            ? "bg-red-500 hover:bg-red-600"
+            : "bg-blue-500 hover:bg-blue-600"
+          }`}
       >
-        <div className="w-5 h-5">
-          <ChevronDownIcon />
-        </div>
+        {isRecording ? "Stop Recording" : "Start Recording"}
       </button>
-      <form
-        className="flex-1 h-full"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const input = e.currentTarget.input as HTMLInputElement;
-          addTodo(input.value);
-          input.value = "";
-        }}
-      >
-        <input
-          className="w-full h-full px-2 outline-none bg-transparent"
-          autoFocus
-          placeholder="What needs to be done?"
-          type="text"
-          name="input"
-        />
-      </form>
-    </div>
-  );
-}
 
-function TodoList({ todos }: { todos: Todo[] }) {
-  return (
-    <div className="divide-y divide-gray-300">
-      {todos.map((todo) => (
-        <div key={todo.id} className="flex items-center h-10">
-          <div className="h-full px-2 flex items-center justify-center">
-            <div className="w-5 h-5 flex items-center justify-center">
-              <input
-                type="checkbox"
-                className="cursor-pointer"
-                checked={todo.done}
-                onChange={() => toggleDone(todo)}
-              />
-            </div>
-          </div>
-          <div className="flex-1 px-2 overflow-hidden flex items-center">
-            {todo.done ? (
-              <span className="line-through">{todo.text}</span>
-            ) : (
-              <span>{todo.text}</span>
-            )}
-          </div>
-          <button
-            className="h-full px-2 flex items-center justify-center text-gray-300 hover:text-gray-500"
-            onClick={() => deleteTodo(todo)}
-          >
-            X
-          </button>
+      <div className="w-full max-w-lg mt-8">
+        <h2 className="text-xl font-semibold mb-2">Transcription:</h2>
+        <div
+          className="w-full min-h-[200px] p-4 border border-gray-300 rounded-lg bg-gray-50"
+        >
+          {transcription || "Your speech will appear here..."}
         </div>
-      ))}
-    </div>
-  );
-}
-
-function ActionBar({ todos }: { todos: Todo[] }) {
-  return (
-    <div className="flex justify-between items-center h-10 px-2 text-xs border-t border-gray-300">
-      <div>Remaining todos: {todos.filter((todo) => !todo.done).length}</div>
-      <button
-        className=" text-gray-300 hover:text-gray-500"
-        onClick={() => deleteCompleted(todos)}
-      >
-        Delete Completed
-      </button>
+      </div>
     </div>
   );
 }
