@@ -7,6 +7,7 @@ import { Note } from "../types/notes";
 import VoiceRecording from "../components/VoiceRecording";
 import NoteSaver from "../components/NoteSaver";
 import NotesList from "../components/NotesList";
+import NoteSummarizer from "../components/NoteSummarizer";
 
 const APP_ID = process.env.NEXT_PUBLIC_INSTANT_APP_ID!;
 const db = init({ appId: APP_ID, schema });
@@ -71,8 +72,8 @@ export default function App() {
     <div className="flex flex-col items-center justify-start min-h-screen p-8">
       <h1 className="text-3xl font-bold mb-8">Voice Recorder</h1>
 
-      <div className="w-full max-w-4xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="w-full max-w-7xl">
+        <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-2 gap-8">
           {/* Voice Recording Section */}
           <div>
             <VoiceRecording
@@ -90,6 +91,11 @@ export default function App() {
           {/* Notes Section */}
           <div>
             <NotesList notes={notes} onDeleteNote={handleDeleteNote} />
+          </div>
+
+          {/* AI Summary Section */}
+          <div className="xl:col-span-1 lg:col-span-2">
+            <NoteSummarizer notes={notes} />
           </div>
         </div>
       </div>
