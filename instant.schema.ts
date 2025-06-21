@@ -14,7 +14,7 @@ const _schema = i.schema({
     notes: i.entity({
       content: i.string(),
       timestamp: i.date().indexed(),
-      ownerId: i.string().indexed(),
+      ownerId: i.string().indexed().optional(),
     }),
   },
   links: {},

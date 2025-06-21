@@ -3,14 +3,29 @@
 import type { InstantRules } from "@instantdb/react";
 
 const rules = {
+  // Default rules that apply to all entities not explicitly defined
+  $default: {
+    allow: {
+      $default: "false", // Deny all operations on any undefined entities
+    },
+  },
+  // Rules for all attributes - prevents creation of new namespaces
+  attrs: {
+    allow: {
+      $default: "false", // Deny all attribute operations
+    },
+  },
+  // Specific rules for notes - only allow access for joeaverbach@gmail.com
   notes: {
     allow: {
-      view: "isOwner",
-      create: "isLoggedIn && auth.id == data.ownerId",
-      update: "isOwner",
-      delete: "isOwner",
+      view: "isAuthorizedUser && isOwner",
+      create: "isAuthorizedUser && auth.id == data.ownerId",
+      update: "isAuthorizedUser && isOwner",
+      delete: "isAuthorizedUser && isOwner",
     },
     bind: [
+      "isAuthorizedUser",
+      "auth.id != null && auth.email == 'joeaverbukh@gmail.com'",
       "isLoggedIn",
       "auth.id != null",
       "isOwner",
