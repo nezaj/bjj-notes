@@ -209,7 +209,7 @@ function EmailStep({ onSendEmail }: { onSendEmail: (email: string) => void }) {
       <div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Sign In</h2>
         <p className="text-gray-600 text-sm">
-          Enter your email and we'll send you a verification code.
+          Enter your email and we&apos;ll send you a verification code.
         </p>
       </div>
 
