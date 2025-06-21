@@ -106,30 +106,36 @@ function Main({ user }: { user: User }) {
   }));
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen p-8">
+    <div className="flex flex-col items-center justify-start min-h-screen p-4 sm:p-6 lg:p-8">
       {/* Header with user info and logout */}
-      <div className="w-full max-w-7xl mb-6 flex justify-between items-center">
-        <h1 className="text-3xl font-bold">BJJ Voice Notes</h1>
-        <div className="flex items-center space-x-4">
-          <span className="text-gray-600">Welcome, {user.email}</span>
-          <button
-            onClick={handleSignOut}
-            className="px-4 py-2 bg-gray-600 text-white font-medium rounded hover:bg-gray-700 transition-colors"
-          >
-            Sign Out
-          </button>
+      <div className="w-full max-w-7xl mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">
+            BJJ Voice Notes
+          </h1>
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <span className="text-sm sm:text-base text-gray-600 truncate">
+              Welcome, {user.email}
+            </span>
+            <button
+              onClick={handleSignOut}
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-600 text-white font-medium text-sm sm:text-base rounded hover:bg-gray-700 transition-colors whitespace-nowrap"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="w-full max-w-7xl">
-        <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Voice Recording Section */}
-          <div>
+          <div className="space-y-4">
             <VoiceRecording
               onTranscriptionChange={handleTranscriptionChange}
               transcription={transcription}
             />
-            <div className="mt-4 flex justify-center">
+            <div className="flex justify-center">
               <NoteSaver
                 transcription={transcription}
                 onSaveNote={handleSaveNote}
@@ -143,7 +149,7 @@ function Main({ user }: { user: User }) {
           </div>
 
           {/* AI Summary Section */}
-          <div className="xl:col-span-1 lg:col-span-2">
+          <div className="lg:col-span-2 xl:col-span-1">
             <NoteSummarizer notes={notes} />
           </div>
         </div>
@@ -156,14 +162,14 @@ function Login() {
   const [sentEmail, setSentEmail] = useState("");
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-lg shadow-md p-8">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+      <div className="max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-md p-6 sm:p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               BJJ Voice Notes
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 mt-2 text-sm sm:text-base">
               Record and organize your BJJ training notes
             </p>
           </div>

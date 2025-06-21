@@ -61,13 +61,15 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold">AI Summary</h2>
+      <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold">
+        AI Summary
+      </h2>
 
       {/* Summarize Button */}
       <button
         onClick={handleSummarize}
         disabled={isLoading || notes.length === 0}
-        className="w-full px-6 py-3 rounded-lg text-white font-medium text-lg transition-all
+        className="w-full px-4 py-2 sm:px-6 sm:py-3 rounded-lg text-white font-medium text-base sm:text-lg transition-all
           bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         {isLoading ? "Generating Summary..." : "Summarize Notes"}
@@ -75,12 +77,12 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
 
       {/* Summary Display */}
       {summary && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-medium">Summary:</h3>
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <h3 className="text-base sm:text-lg font-medium">Summary:</h3>
             <button
               onClick={handleCopySummary}
-              className={`px-3 py-1 text-sm rounded-md transition-all ${
+              className={`px-3 py-1 text-xs sm:text-sm rounded-md transition-all self-start sm:self-auto ${
                 isCopied
                   ? "bg-green-100 text-green-800 border border-green-300"
                   : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
@@ -89,14 +91,16 @@ export default function NoteSummarizer({ notes }: NoteSummarizerProps) {
               {isCopied ? "✓ Copied!" : "📋 Copy"}
             </button>
           </div>
-          <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <p className="whitespace-pre-wrap">{summary}</p>
+          <div className="p-3 sm:p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">
+              {summary}
+            </p>
           </div>
         </div>
       )}
 
       {/* Notes count indicator */}
-      <p className="text-sm text-gray-500">
+      <p className="text-xs sm:text-sm text-gray-500">
         {notes.length} note{notes.length !== 1 ? "s" : ""} available to
         summarize
       </p>
