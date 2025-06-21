@@ -5,11 +5,17 @@ import type { InstantRules } from "@instantdb/react";
 const rules = {
   notes: {
     allow: {
-      view: "true",
-      create: "true",
-      update: "true",
-      delete: "true",
+      view: "isOwner",
+      create: "isLoggedIn && auth.id == data.ownerId",
+      update: "isOwner",
+      delete: "isOwner",
     },
+    bind: [
+      "isLoggedIn",
+      "auth.id != null",
+      "isOwner",
+      "isLoggedIn && auth.id == data.ownerId",
+    ],
   },
 } satisfies InstantRules;
 
